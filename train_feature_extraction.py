@@ -3,6 +3,7 @@ import tensorflow as tf
 from sklearn.model_selection import train_test_split
 from alexnet import AlexNet
 from sklearn.utils import shuffle
+import time
 
 # TODO: Load traffic signs data.
 with open('./train.p', 'rb') as f:
@@ -42,8 +43,8 @@ logits = tf.add(tf.matmul(fc7, weight), bias)
 # be able to reuse some the code.
 cross_entropy = tf.nn.softmax_cross_entropy_with_logits_v2(labels=one_hot_y, logits=logits)
 loss_operations = tf.reduce_mean(cross_entropy)
-optimizer = tf.train.AdamOptimizer(learning_rate=0.001)
-training_opeartions = optimizer.minimize(loss_operations)
+optimizer = tf.train.AdamOptimizer()
+training_opeartions = optimizer.minimize(loss_operations, var_list=[weight, bias])
 
 # TODO: Train and evaluate the feature extraction model.
 correct_prediction = tf.equal(tf.argmax(logits, 1), tf.argmax(one_hot_y, 1))
@@ -64,7 +65,7 @@ def evaluate(X_data, y_data, sess):
     return total_accuracy / n_examples, total_loss / n_examples
 
 
-EPOCHS = 1
+EPOCHS = 10
 BATCH_SIZE = 128
 
 with tf.Session() as sess:
@@ -74,12 +75,14 @@ with tf.Session() as sess:
     print("training for {} epochs...".format(EPOCHS))
     for i in range(EPOCHS):
         X_train, y_train = shuffle(X_train, y_train)
+        t0 = time.time()
         for offset in range(0, n_examples, BATCH_SIZE):
             batch_x, batch_y = X_train[offset:offset + BATCH_SIZE], y_train[offset:offset + BATCH_SIZE]
             sess.run(training_opeartions, feed_dict={x: batch_x, y: batch_y})
 
         validation_accuracy, validation_loss = evaluate(X_valid, y_valid, sess)
         print("EPOCHS {}: ... validation accuracy: {:.3f} loss: {:.3f}".format(i + 1, validation_accuracy, validation_loss))
+        print("Time: %.3f seconds" % (time.time() - t0))
         print()
 
     saver.save(sess, './alexnet')

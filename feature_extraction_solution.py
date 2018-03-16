@@ -12,7 +12,7 @@ x = tf.placeholder(tf.float32, (None, 32, 32, 3))
 resized = tf.image.resize_images(x, (227, 227))
 
 # Returns the second final layer of the AlexNet model,
-# this allows us to redo the last layer for the specifically for 
+# this allows us to redo the last layer for the specifically for
 # traffic signs model.
 fc7 = AlexNet(resized, feature_extract=True)
 shape = (fc7.get_shape().as_list()[-1], nb_classes)
